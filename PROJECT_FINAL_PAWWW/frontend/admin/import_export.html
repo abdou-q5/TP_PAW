@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Import/Export Students</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<h2>Import / Export Students CSV</h2>
+
+<!-- استيراد CSV -->
+<form action="../../backend/import_export.php?action=import" method="POST" enctype="multipart/form-data">
+    <input type="file" name="file" accept=".csv" required>
+    <button type="submit">Import CSV</button>
+</form>
+
+<!-- تصدير CSV -->
+<a href="../../backend/import_export.php?action=export">
+    <button>Download CSV</button>
+</a>
+
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Attendance System</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<h1>Welcome to Algiers University Attendance System</h1>
+
+<div class="login-section">
+    <h2>Login</h2>
+    <form id="loginForm">
+        <input type="text" name="username" placeholder="Username" required><br>
+        <input type="password" name="password" placeholder="Password" required><br>
+        <button type="submit">Login</button>
+    </form>
+</div>
+
+<script>
+$('#loginForm').submit(function(e){
+    e.preventDefault();
+    $.ajax({
+        url: '../backend/auth.php',   // تأكد من المسار الصحيح
+        type: 'POST',
+        data: $(this).serialize(),
+        dataType: 'json',            // jQuery يتوقع JSON
+        success: function(res){
+            if(res.success){
+                alert('Login successful! Role: ' + res.role);
+                // إعادة التوجيه حسب الدور
+                if(res.role=='admin') window.location.href = 'admin/home.html';
+                else if(res.role=='professor') window.location.href = 'professor/home.html';
+                else window.location.href = 'student/home.html';
+            } else {
+                alert(res.message);
+            }
+        },
+        error: function(xhr, status, error){
+            console.log("AJAX Error:", error);
+            console.log(xhr.responseText); // يظهر أي خطأ PHP
+        }
+    });
+});
+</script>
+
+</body>
+</html>

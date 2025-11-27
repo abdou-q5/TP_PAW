@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Statistics</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<h2>Attendance Statistics</h2>
+<canvas id="attendanceChart"></canvas>
+
+<script>
+const ctx = document.getElementById('attendanceChart').getContext('2d');
+const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: ['Course 1', 'Course 2', 'Course 3'],
+        datasets: [{
+            label: 'Attendance %',
+            data: [80, 90, 75],
+            backgroundColor: 'rgba(54, 162, 235, 0.6)'
+        }]
+    }
+});
+</script>
+</body>
+</html>

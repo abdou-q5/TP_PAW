@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Home</title>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<h2>Welcome, Student</h2>
+<h3>Your Courses</h3>
+<ul id="courseList"></ul>
+
+<script>
+$(document).ready(function(){
+    $.get('../backend/students.php?action=list', function(data){
+        let students = JSON.parse(data);
+        let html = '';
+        students.forEach(s => {
+            html += `<li>${s.name} (${s.email})</li>`;
+        });
+        $('#courseList').html(html);
+    });
+});
+</script>
+</body>
+</html>
