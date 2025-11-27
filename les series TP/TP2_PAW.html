@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestion de la Présence et de la Participation</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: "Poppins", sans-serif;
+    background: #f4f6fb;
+    color: #333;
+    display: flex;
+  }
+
+  /* 🧭 Navbar sur la gauche */
+  #navbar {
+    width: 200px;
+    background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    padding: 20px 0;
+    box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+    overflow-y: auto;
+  }
+
+  #navbar h2 {
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 30px;
+    color: #ecf0f1;
+    padding: 0 15px;
+    border-bottom: 2px solid rgba(255,255,255,0.2);
+    padding-bottom: 15px;
+  }
+
+  #navbar ul {
+    list-style: none;
+  }
+
+  #navbar ul li {
+    padding: 15px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+  }
+
+  #navbar ul li:hover {
+    background: rgba(255,255,255,0.1);
+    border-left-color: #3498db;
+  }
+
+  #navbar ul li.active {
+    background: rgba(52, 152, 219, 0.3);
+    border-left-color: #3498db;
+    font-weight: 600;
+  }
+
+  /* 📄 Contenu principal */
+  #content {
+    margin-left: 250px;
+    width: calc(100% - 250px);
+    min-height: 100vh;
+  }
+
+  /* Bannière de présentation */
+  #presentation {
+    text-align: center;
+    padding: 60px 20px 40px 20px;
+    background: linear-gradient(135deg, #333 0%, #333 100%);
+    color: white;
+    border-bottom-left-radius: 50% 10%;
+    border-bottom-right-radius: 50% 10%;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  #presentation h1 {
+    font-size: 42px;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+    animation: fadeIn 1.2s ease-in-out;
+  }
+
+  #presentation hr {
+    width: 80px;
+    border: 2px solid white;
+    border-radius: 3px;
+    margin: 0 auto;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Pages */
+  .page {
+    display: none;
+  }
+
+  .page.active {
+    display: block;
+  }
+
+  .container {
+    width: 90%;
+    max-width: 1100px;
+    margin: 30px auto;
+  }
+
+  .card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    margin-bottom: 25px;
+    overflow-x: auto; /* شريط تمرير داخلي */
+  }
+
+  h2 {
+    color: #007bff;
+    border-left: 5px solid #007bff;
+    padding-left: 10px;
+    margin-bottom: 20px;
+  }
+
+  label {
+    display: block;
+    margin-top: 10px;
+    font-weight: 500;
+    font-family: Arial, Helvetica, sans-serif;
+    color: black;
+  }
+
+  input {
+    padding: 8px;
+    width: 250px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    margin-top: 5px;
+    transition: all 0.2s;
+  }
+
+  input:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+
+  span {
+    color: red;
+    font-size: 13px;
+  }
+
+  .bo {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+  }
+
+  .bo:hover {
+    background-color: #555;
+  }
+
+   #attendanceTable {
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 20px;
+    font-size: 14px;
+    table-layout: fixed;
+    display: block;
+    overflow-x: auto;
+  }
+  #attendanceTable th,
+  #attendanceTable td {
+    border: 1px solid #ddd;
+    padding: 6px 4px;
+    text-align: center;
+    word-wrap: break-word;
+    white-space: normal;
+  }
+  #attendanceTable tr:nth-child(even) { background-color: #fafbff; }
+  #attendanceTable tr:hover { background-color: #eaf4ff; }
+
+  td.clickable {
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  .green { background-color: #c3f7c0 !important; }
+  .yellow { background-color: #fff6b2 !important; }
+  .red { background-color: #ffc2c2 !important; }
+
+  #reportSection {
+    display: none;
+    margin-top: 30px;
+    border-top: 2px solid #007bff;
+    padding-top: 20px;
+  }
+
+  canvas {
+    margin-top: 20px;
+  }
+
+  #buttonsZone {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 25px;
+  }
+
+  .btn {
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    color: white;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+
+  .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+  }
+
+  .btn-blue { background: linear-gradient(45deg, #fff6b2, #ffc2c2); }
+  .btn-green { background: linear-gradient(45deg, #7ee27d, #94c696); }
+  .btn-orange { background: linear-gradient(45deg, #ecd207, #ecd207); }
+
+  tr.highlight { background-color: #d7ebff !important; }
+
+  @keyframes blink {
+    0% { background-color: #a3f0a2; }
+    50% { background-color: #7ee27d; }
+    100% { background-color: #a3f0a2; }
+  }
+
+  .excellent {
+    animation: blink 1s infinite;
+  }
+
+  .di1 {
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  #in1 {
+    padding: 8px;
+    width: 500px;
+    border-radius: 6px;
+    border: 1px solid black;
+    margin-top: 5px;
+    transition: all 0.2s;
+    font-family: 'Courier New', Courier, monospace;
+  }
+
+  #in1:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+
+  .a, .b {
+    margin-left: 10px;
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+  }
+
+  .a:hover, .b:hover {
+    background-color: #555;
+  }
+
+  /* Page d'accueil */
+  .welcome-content {
+    text-align: center;
+    padding: 80px 20px;
+  }
+
+  .welcome-content h1 {
+    font-size: 48px;
+    color: #2c3e50;
+    margin-bottom: 20px;
+  }
+
+  .welcome-content p {
+    font-size: 20px;
+    color: #7f8c8d;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    #navbar {
+      width: 100%;
+      height: auto;
+      position: relative;
+    }
+    
+    #content {
+      margin-left: 0;
+      width: 100%;
+    }
+
+    #in1 {
+      width: 100%;
+      max-width: 400px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- 🧭 Navbar sur la gauche -->
+<nav id="navbar">
+  <h2>📚 Menu</h2>
+  <ul>
+    <li class="nav-item active" data-page="home">🏠 Accueil</li>
+    <li class="nav-item" data-page="addStudent">➕ Ajouter Étudiant</li>
+    <li class="nav-item" data-page="attendance">✅ Tableau de Présence</li>
+    <li class="nav-item" data-page="report">📊 Rapport</li>
+  </ul>
+</nav>
+
+<!-- 📄 Contenu principal -->
+<div id="content">
+  <section id="presentation">
+    <h1>Programme de Présence</h1>
+    <hr>
+  </section>
+
+  <!-- Page Accueil -->
+  <div id="home" class="page active">
+    <div class="container">
+      <div class="card welcome-content">
+        <h1>Bienvenue!</h1>
+        <p>Gérez facilement la présence et la participation de vos étudiants. Utilisez le menu à gauche pour naviguer entre les différentes sections.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page Ajouter Étudiant -->
+  <div id="addStudent" class="page">
+    <div class="container">
+      <div class="card">
+        <h2>Ajouter un Étudiant</h2>
+        <form id="studentForm" novalidate>
+          <label>Student ID:
+            <input type="text" id="studentId"><span id="idError"></span>
+          </label>
+          <label>Last Name:
+            <input type="text" id="lastName"><span id="lastError"></span>
+          </label>
+          <label>First Name:
+            <input type="text" id="firstName"><span id="firstError"></span>
+          </label>
+          <label>Email:
+            <input type="text" id="email"><span id="emailError"></span>
+          </label>
+          <button type="submit" class="bo">Add Student</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page Tableau de Présence -->
+  <div id="attendance" class="page">
+    <div class="container">
+      <div class="di1">
+        <label for="in1">Recherche par nom</label>
+        <input type="text" id="in1" placeholder="Rechercher...">
+        <button id="b1" class="a">Trier par absence</button>
+        <button id="b2" class="b">Trier par participation</button>
+      </div>
+      <br>
+
+      <div class="card">
+        <h2>Tableau Interactif de Présence</h2>
+        <table id="attendanceTable">
+          <thead>
+            <tr>
+              <th>Last Name</th><th>First Name</th>
+              <th colspan="12">Sessions</th>
+              <th>Absences</th><th>Participations</th><th>Message</th>
+            </tr>
+            <tr>
+              <th></th><th></th>
+              <th>S1 (P)</th><th>S1 (Par)</th>
+              <th>S2 (P)</th><th>S2 (Par)</th>
+              <th>S3 (P)</th><th>S3 (Par)</th>
+              <th>S4 (P)</th><th>S4 (Par)</th>
+              <th>S5 (P)</th><th>S5 (Par)</th>
+              <th>S6 (P)</th><th>S6 (Par)</th>
+              <th></th><th></th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>omar</td><td>mohamed</td>
+              <td class="clickable"></td><td class="clickable"></td>
+              <td class="clickable"></td><td class="clickable"></td>
+              <td class="clickable"></td><td class="clickable"></td>
+              <td class="clickable"></td><td class="clickable"></td>
+              <td class="clickable"></td><td class="clickable"></td>
+              <td class="clickable"></td><td class="clickable"></td>
+              <td></td><td></td><td></td>
+            </tr>
+            <tr>
+              <td>ali</td><td>djamal</td>
+              <td class="clickable"></td><td class="clickable"></td>
+              <td class="clickable"></td><td class="clickable"></td>
+              <td class="clickable"></td><td class="clickable"></td>
+              <td class="clickable"></td><td class="clickable"></td>
+              <td class="clickable"></td><td class="clickable"></td>
+              <td class="clickable"></td><td class="clickable"></td>
+              <td></td><td></td><td></td>
+            </tr>
+            <tr>
+              <td>lina</td><td>kamal</td>
+              <td class="clickable"></td><td class="clickable"></td>
+              <td class="clickable"></td><td class="clickable"></td>
+              <td class="clickable"></td><td class="clickable"></td>
+              <td class="clickable"></td><td class="clickable"></td>
+              <td class="clickable"></td><td class="clickable"></td>
+              <td class="clickable"></td><td class="clickable"></td>
+              <td></td><td></td><td></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div id="buttonsZone">
+          <button class="btn btn-green" id="highlightExcellent">Highlight Excellent Students</button>
+          <button class="btn btn-orange" id="resetColors">Reset Colors</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page Rapport -->
+  <div id="report" class="page">
+    <div class="container">
+      <div class="card">
+        <h2>Rapport de la Classe</h2>
+        <button class="btn btn-blue" id="showReport">Générer le Rapport</button>
+        
+        <div id="reportSection">
+          <h3>Statistiques</h3>
+          <p id="reportText"></p>
+          <canvas id="reportChart" width="400" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// 🔹 Navigation entre les pages
+$(document).ready(function() {
+  $('.nav-item').on('click', function() {
+    $('.nav-item').removeClass('active');
+    $(this).addClass('active');
+    
+    const pageId = $(this).data('page');
+    $('.page').removeClass('active');
+    $('#' + pageId).addClass('active');
+  });
+
+  // Recherche
+  $("#in1").on("keyup", function() {
+    const value = $(this).val().toLowerCase();
+    $("#attendanceTable tbody tr").filter(function() {
+      const lastName = $(this).find("td:eq(0)").text().toLowerCase();
+      const firstName = $(this).find("td:eq(1)").text().toLowerCase();
+      $(this).toggle(lastName.indexOf(value) > -1 || firstName.indexOf(value) > -1);
+    });
+  });
+
+  // Tri par absence
+  $("#b1").on("click", function() {
+    const rows = $("#attendanceTable tbody tr").get();
+    rows.sort(function(a, b) {
+      const A = parseInt($(a).find("td:eq(14)").text()) || 0;
+      const B = parseInt($(b).find("td:eq(14)").text()) || 0;
+      return A - B;
+    });
+    $.each(rows, function(index, row) {
+      $("#attendanceTable tbody").append(row);
+    });
+  });
+
+  // Tri par participation
+  $("#b2").on("click", function() {
+    const rows = $("#attendanceTable tbody tr").get();
+    rows.sort(function(a, b) {
+      const A = parseInt($(a).find("td:eq(15)").text()) || 0;
+      const B = parseInt($(b).find("td:eq(15)").text()) || 0;
+      return B - A;
+    });
+    $.each(rows, function(index, row) {
+      $("#attendanceTable tbody").append(row);
+    });
+  });
+
+  // Hover sur les lignes
+  $("#attendanceTable tbody").on("mouseenter", "tr", function() {
+    $(this).addClass("highlight");
+  });
+  $("#attendanceTable tbody").on("mouseleave", "tr", function() {
+    $(this).removeClass("highlight");
+  });
+
+  // Clic sur ligne pour afficher les détails
+  $("#attendanceTable tbody").on("click", "tr", function() {
+    const last = $(this).find("td:eq(0)").text();
+    const first = $(this).find("td:eq(1)").text();
+    const absText = $(this).find("td:eq(14)").text();
+    const partText = $(this).find("td:eq(15)").text();
+    const abs = absText.match(/\d+/)?.[0] || 0;
+    const part = partText.match(/\d+/)?.[0] || 0;
+    alert(`👤 Étudiant : ${first} ${last}\n📉 Absences : ${abs}\n💬 Participations : ${part}`);
+  });
+
+  // Highlight Excellent Students
+  $("#highlightExcellent").on("click", function() {
+    $("#attendanceTable tbody tr").each(function() {
+      $(this).removeClass("excellent").removeAttr("style");
+    });
+
+    let count = 0;
+    $("#attendanceTable tbody tr").each(function() {
+      updateRow(this);
+    });
+
+    $("#attendanceTable tbody tr").each(function() {
+      const absText = $(this).find("td:eq(14)").text();
+      const partText = $(this).find("td:eq(15)").text();
+      const abs = absText.match(/\d+/) ? parseInt(absText.match(/\d+/)[0]) : 0;
+      const part = partText.match(/\d+/) ? parseInt(partText.match(/\d+/)[0]) : 0;
+
+      if (abs <= 2 && part >= 3) {
+        $(this).addClass("excellent");
+        $(this).css({
+          "background-color": "#d4edda",
+          "font-weight": "700",
+          "color": "#034003",
+          "transition": "background 0.35s ease"
+        });
+        count++;
+      }
+    });
+
+    alert(`🌟 ${count} excellent student(s) highlighted!`);
+  });
+
+  // Reset Colors
+  $("#resetColors").on("click", function() {
+    $("#attendanceTable tbody tr").each(function() {
+      $(this).removeClass("excellent green yellow red highlight");
+      $(this).removeAttr("style");
+      updateRow(this);
+    });
+  });
+});
+
+const table = document.getElementById("attendanceTable");
+
+// Met à jour chaque ligne du tableau
+function updateRow(row) {
+  const cells = row.querySelectorAll("td");
+  let absences = 0, participations = 0;
+  
+  for (let i = 2; i < 14; i += 2)
+    if (cells[i].textContent.trim() === "") absences++;
+  
+  for (let i = 3; i < 14; i += 2)
+    if (cells[i].textContent.trim() === "✓") participations++;
+  
+  cells[14].textContent = absences + " Abs";
+  cells[15].textContent = participations + " Par";
+
+  row.classList.remove("green", "yellow", "red");
+  if (absences < 3) row.classList.add("green");
+  else if (absences <= 4) row.classList.add("yellow");
+  else row.classList.add("red");
+
+  let msg = "";
+  if (absences < 3 && participations >= 3)
+    msg = "Good attendance – Excellent participation";
+  else if (absences >= 5)
+    msg = "Excluded – too many absences";
+  else if (absences < 3 && participations < 3)
+    msg = "Good attendance – You need to participate more";
+  else if (absences >= 3 && participations >= 3)
+    msg = "Warning – low attendance but good participation";
+  else
+    msg = "Warning – low attendance and low participation";
+
+  cells[16].textContent = msg;
+}
+
+// Cases cliquables
+table.querySelectorAll("td.clickable").forEach(cell => {
+  cell.addEventListener("click", () => {
+    cell.textContent = cell.textContent === "✓" ? "" : "✓";
+    updateRow(cell.parentElement);
+  });
+});
+
+table.querySelectorAll("tbody tr").forEach(row => updateRow(row));
+
+// Formulaire d'ajout d'étudiant
+document.getElementById("studentForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+  const id = studentId.value.trim();
+  const last = lastName.value.trim();
+  const first = firstName.value.trim();
+  const email = document.getElementById("email").value.trim();
+  
+  idError.textContent = lastError.textContent = firstError.textContent = emailError.textContent = "";
+  let valid = true;
+  
+  if (!/^[0-9]+$/.test(id)) {
+    idError.textContent = "ID must contain only numbers.";
+    valid = false;
+  }
+  if (!/^[a-zA-Z]+$/.test(last)) {
+    lastError.textContent = "Last name must contain only letters.";
+    valid = false;
+  }
+  if (!/^[a-zA-Z]+$/.test(first)) {
+    firstError.textContent = "First name must contain only letters.";
+    valid = false;
+  }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    emailError.textContent = "Enter a valid email.";
+    valid = false;
+  }
+  
+  if (!valid) return;
+
+  const tableBody = document.querySelector("#attendanceTable tbody");
+  const newRow = document.createElement("tr");
+  newRow.innerHTML = `<td>${last}</td><td>${first}</td>` +
+    "<td class='clickable'></td><td class='clickable'></td>".repeat(6) +
+    "<td></td><td></td><td></td>";
+  tableBody.appendChild(newRow);
+  
+  newRow.querySelectorAll("td.clickable").forEach(c => c.addEventListener("click", () => {
+    c.textContent = c.textContent === "✓" ? "" : "✓";
+    updateRow(c.parentElement);
+  }));
+  
+  updateRow(newRow);
+  alert("✅ Student added successfully!");
+  this.reset();
+});
+
+// Rapport
+let reportChart = null;
+
+document.getElementById("showReport").addEventListener("click", () => {
+  const rows = document.querySelectorAll("#attendanceTable tbody tr");
+  const totalStudents = rows.length;
+  let totalPresents = 0, totalParticipants = 0;
+
+  rows.forEach(row => {
+    const c = row.querySelectorAll("td");
+    for (let i = 2; i < 14; i += 2) {
+      if (c[i].textContent.trim() === "✓") totalPresents++;
+    }
+    for (let i = 3; i < 14; i += 2) {
+      if (c[i].textContent.trim() === "✓") totalParticipants++;
+    }
+  });
+
+  document.getElementById("reportSection").style.display = "block";
+  document.getElementById("reportText").innerHTML = `
+    <strong>Total Students:</strong> ${totalStudents}<br>
+    <strong>Total Presences:</strong> ${totalPresents}<br>
+    <strong>Total Participations:</strong> ${totalParticipants}
+  `;
+
+  const ctx = document.getElementById("reportChart").getContext("2d");
+  if (reportChart) reportChart.destroy();
+
+  reportChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["Students", "Presences", "Participations"],
+      datasets: [{
+        label: "Class Report",
+        data: [totalStudents, totalPresents, totalParticipants],
+        backgroundColor: ["#007bff", "#28a745", "#ffc107"]
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1 }
+        }
+      }
+    }
+  });
+});
+</script>
+
+</body>
+</html>

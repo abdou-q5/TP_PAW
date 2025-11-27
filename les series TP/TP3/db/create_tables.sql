@@ -1,0 +1,27 @@
+CREATE DATABASE IF NOT EXISTS atten CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE atten;
+
+CREATE TABLE IF NOT EXISTS students (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  fullname VARCHAR(150) NOT NULL,
+  matricule VARCHAR(80) NOT NULL UNIQUE,
+  group_id VARCHAR(50)
+);
+
+CREATE TABLE IF NOT EXISTS attendance_sessions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  course_id INT DEFAULT NULL,
+  group_id VARCHAR(50) DEFAULT NULL,
+  date DATE NOT NULL,
+  opened_by INT DEFAULT NULL,
+  status VARCHAR(20) DEFAULT 'open'
+);
+
+CREATE TABLE IF NOT EXISTS attendances (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  session_id INT NOT NULL,
+  student_id INT NOT NULL,
+  status VARCHAR(20) NOT NULL,
+  FOREIGN KEY (session_id) REFERENCES attendance_sessions(id) ON DELETE CASCADE,
+  FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
