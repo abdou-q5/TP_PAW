@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Professeur Panel</title>
+<style>
+body{font-family:sans-serif;background:#f1f1f1;margin:0;padding:0;}
+.navbar{background:#4c6ef5;color:white;padding:15px;text-align:center;font-size:22px;font-weight:bold;}
+.container{width:90%;max-width:900px;margin:30px auto;background:white;padding:20px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.1);}
+h2{text-align:center;margin-bottom:20px;color:#333;}
+select,input,button{padding:8px;margin:5px; border-radius:6px;border:1px solid #aaa;}
+button{background:#4c6ef5;color:white;border:none;cursor:pointer;transition:0.3s;}
+button:hover{background:#3b5bdb;}
+table{width:100%;border-collapse:collapse;margin-top:20px;}
+th,td{border:1px solid #ddd;padding:8px;text-align:center;}
+</style>
+</head>
+<body>
+<div class="navbar">Professeur Panel</div>
+<div class="container">
+<h2>Gestion des Présences</h2>
+<div>
+<label>Matière: <select id="courses"></select></label>
+<label>Date: <input type="date" id="date"></label>
+<button id="load">Charger Étudiants</button>
+<button id="save">Enregistrer</button>
+</div>
+
+<table id="studentsTable">
+<thead><tr><th>Étudiant</th><th>Présent</th><th>Participation</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+
+<script>
+// initialiser date
+document.getElementById('date').value=new Date().toISOString().slice(0,10);
+
+// Charger étudiants (remplacer par endpoint backend réel)
+document.getElementById('load').addEventListener('click', async ()=>{
+const course_id=document.getElementById('courses').value;
+if(!course_id) return alert('Choisir une matière');
+const res=await fetch('/backend/professor/list_course_students.php?course_id='+course_id);
+const j=await res.json();
+const tbody=document.querySelector('#studentsTable tbody');
+tbody.innerHTML='';
+if(j.students){
+j.students.forEach(s=>{
+const tr=document.createElement('tr');
+tr.innerHTML=`<td>${s.full_name||s.username}</td>
+<td><input type="checkbox" data-id="${s.student_id}"></td>
+<td><select data-id="${s.student_id}">
+<option value="none">none</option><option value="low">low</option><option value="medium">medium</option><option value="high">high</option>
+</select></td>`;
+tbody.appendChild(tr);
+});
+}
+});
+
+// Enregistrer présence
+document.getElementById('save').addEventListener('click', async ()=>{
+const course_id=document.getElementById('courses').value;
+const date=document.getElementById('date').value;
+const rows=Array.from(document.querySelectorAll('#studentsTable tbody tr'));
+const marks=rows.map(tr=>{
+const id=tr.querySelector('input[type=checkbox]').dataset.id;
+const presence=tr.querySelector('input[type=checkbox]').checked?1:0;
+const participation=tr.querySelector('select').value;
+return {student_id:id,presence,participation};
+});
+const res=await fetch('/backend/professor/mark_attendance.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({course_id,date,marks})});
+const j=await res.json();
+if(j.ok) alert('Enregistré'); else alert(JSON.stringify(j));
+});
+</script>
+</body>
+</html>

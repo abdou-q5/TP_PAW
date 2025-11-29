@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plateforme Scolaire</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f1f1f1;
+        }
+
+        .navbar {
+            width: 100%;
+            background: #4c6ef5;
+            padding: 15px;
+            color: white;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: 40px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .role-card {
+            background: #f8f9ff;
+            border-left: 5px solid #4c6ef5;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 22px;
+            background: #4c6ef5;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-top: 15px;
+            text-align: center;
+            transition: 0.3s;
+        }
+        .btn:hover {
+            background: #3b5bdb;
+        }
+
+        /* Login Form */
+        .login-box {
+            width: 100%;
+            max-width: 350px;
+            margin: 40px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 6px;
+            border: 1px solid #aaa;
+        }
+
+        /* Responsive */
+        @media(max-width:600px){
+            .navbar {
+                font-size: 18px;
+                padding: 10px;
+            }
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">Plateforme Éducative</div>
+
+    <div class="container">
+        <h2>Choisissez un rôle</h2>
+
+        <div class="role-card">
+            <h3>👨‍💼 Admin</h3>
+            <p>Gestion des professeurs, étudiants et cours.</p>
+            <a href="#login" class="btn">Connexion Admin</a>
+        </div>
+
+        <div class="role-card">
+            <h3>👨‍🏫 Professeur</h3>
+            <p>Faire l’absence, participation et gestion des cours.</p>
+            <a href="#login" class="btn">Connexion Professeur</a>
+        </div>
+
+        <div class="role-card">
+            <h3>👨‍🎓 Étudiant</h3>
+            <p>Voir les cours, absences et participation.</p>
+            <a href="#login" class="btn">Connexion Étudiant</a>
+        </div>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="login" class="login-box">
+        <h2>Connexion</h2>
+        <input type="text" placeholder="Nom d'utilisateur">
+        <input type="password" placeholder="Mot de passe">
+        <a href="#" class="btn" style="width:100%;text-align:center;">Se connecter</a>
+    </div>
+
+</body>
+</html>

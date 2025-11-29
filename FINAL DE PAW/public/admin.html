@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel</title>
+<style>
+body{font-family:sans-serif;background:#f1f1f1;margin:0;padding:0;}
+.navbar{background:#4c6ef5;color:white;padding:15px;text-align:center;font-size:22px;font-weight:bold;}
+.container{width:90%;max-width:800px;margin:30px auto;background:white;padding:20px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.1);}
+h2{text-align:center;margin-bottom:20px;color:#333;}
+form{margin-bottom:20px;}
+input, select, button{padding:10px;margin:5px 0;width:100%;border-radius:6px;border:1px solid #aaa;}
+button{background:#4c6ef5;color:white;border:none;cursor:pointer;transition:0.3s;}
+button:hover{background:#3b5bdb;}
+table{width:100%;border-collapse:collapse;margin-top:15px;}
+th,td{border:1px solid #ddd;padding:8px;text-align:center;}
+</style>
+</head>
+<body>
+<div class="navbar">Admin Panel</div>
+<div class="container">
+<h2>Ajouter Utilisateur</h2>
+<form id="addUser">
+<input type="text" name="username" placeholder="Nom d'utilisateur" required>
+<input type="password" name="password" placeholder="Mot de passe" required>
+<select name="role">
+<option value="admin">Admin</option>
+<option value="professor">Professeur</option>
+<option value="student">Étudiant</option>
+</select>
+<input type="text" name="full_name" placeholder="Nom complet (optionnel)">
+<button type="submit">Ajouter</button>
+</form>
+
+<h2>Ajouter Cours</h2>
+<form id="addCourse">
+<input type="text" name="name" placeholder="Nom du cours" required>
+<input type="number" name="professor_id" placeholder="ID Professeur (optionnel)">
+<button type="submit">Ajouter</button>
+</form>
+
+<h2>Liste des Utilisateurs</h2>
+<table id="usersTable">
+<thead><tr><th>ID</th><th>Username</th><th>Rôle</th><th>Nom complet</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+
+<script>
+// Ajouter utilisateur
+document.getElementById('addUser').addEventListener('submit', async e=>{
+e.preventDefault();
+const f=e.target;
+const body={username:f.username.value,password:f.password.value,role:f.role.value,full_name:f.full_name.value};
+const res=await fetch('/backend/admin/add_user.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+const j=await res.json();
+alert(JSON.stringify(j));
+loadUsers();
+});
+
+// Ajouter cours
+document.getElementById('addCourse').addEventListener('submit', async e=>{
+e.preventDefault();
+const f=e.target;
+const body={name:f.name.value,professor_id:f.professor_id.value || null};
+const res=await fetch('/backend/admin/add_course.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+const j=await res.json();
+alert(JSON.stringify(j));
+});
+
+// Charger utilisateurs
+async function loadUsers(){
+const res=await fetch('/backend/admin/list_users.php');
+const j=await res.json();
+const tbody=document.querySelector('#usersTable tbody');
+tbody.innerHTML='';
+if(j.users){
+j.users.forEach(u=>{
+const tr=document.createElement('tr');
+tr.innerHTML=`<td>${u.id}</td><td>${u.username}</td><td>${u.role}</td><td>${u.full_name||''}</td>`;
+tbody.appendChild(tr);
+});
+}
+}
+loadUsers();
+</script>
+</body>
+</html>

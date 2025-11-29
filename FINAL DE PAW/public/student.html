@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Étudiant Panel</title>
+<style>
+body{font-family:sans-serif;background:#f1f1f1;margin:0;padding:0;}
+.navbar{background:#4c6ef5;color:white;padding:15px;text-align:center;font-size:22px;font-weight:bold;}
+.container{width:90%;max-width:700px;margin:30px auto;background:white;padding:20px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.1);}
+h2{text-align:center;margin-bottom:20px;color:#333;}
+ul{list-style:none;}
+li{background:#f8f9ff;margin:8px 0;padding:12px;border-left:5px solid #4c6ef5;border-radius:5px;}
+</style>
+</head>
+<body>
+<div class="navbar">Étudiant Panel</div>
+<div class="container">
+<h2>Mes Cours</h2>
+<ul id="list"></ul>
+</div>
+
+<script>
+(async function(){
+const res=await fetch('/backend/student/my_courses.php');
+const j=await res.json();
+const ul=document.getElementById('list');
+if(j.courses) j.courses.forEach(c=>{
+const li=document.createElement('li');
+li.textContent=c.name+(c.professor_name?' — '+c.professor_name:'');
+ul.appendChild(li);
+});
+})();
+</script>
+</body>
+</html>
